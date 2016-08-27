@@ -11,7 +11,7 @@ or include it inside you're composer.json
 ```json
 {
    "require": {
-      "sagittariusx/beluga.web": "^0.1.0"
+      "sagittariusx/beluga.web": "^0.1.1"
    }
 }
 ```
