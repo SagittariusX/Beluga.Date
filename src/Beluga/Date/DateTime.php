@@ -7,7 +7,7 @@
  * @package        Beluga
  * @since          2016-08-21
  * @subpackage     Date
- * @version        0.1.0
+ * @version        0.1.1
  */
 
 
@@ -758,10 +758,22 @@ class DateTime extends \DateTime
       : DateTime
    {
 
-      $this->add( new \DateInterval( 'PT' . $seconds . 'S' ) );
+      return $this->move( new \DateInterval( 'PT' . \abs( $seconds ) . 'S' ), $seconds < 0 );
 
+   }
+
+   public final function move( \DateInterval $interval, $negative = false )
+      : DateTime
+   {
+      if ( $negative )
+      {
+         $this->sub( $interval );
+      }
+      else
+      {
+         $this->add( $interval );
+      }
       return $this;
-
    }
 
    /**
@@ -774,9 +786,7 @@ class DateTime extends \DateTime
       : DateTime
    {
 
-      $this->add( new \DateInterval( 'PT' . $minutes . 'M' ) );
-
-      return $this;
+      return $this->move( new \DateInterval( 'PT' . \abs( $minutes ) . 'M' ), $minutes < 0 );
 
    }
 
@@ -790,9 +800,7 @@ class DateTime extends \DateTime
       : DateTime
    {
 
-      $this->add( new \DateInterval( 'PT' . $hours . 'H' ) );
-
-      return $this;
+      return $this->move( new \DateInterval( 'PT' . \abs( $hours ) . 'H' ), $hours < 0 );
 
    }
 
@@ -806,9 +814,7 @@ class DateTime extends \DateTime
       : DateTime
    {
 
-      $this->add( new \DateInterval( 'P' . $days . 'D' ) );
-
-      return $this;
+      return $this->move( new \DateInterval( 'PT' . \abs( $days ) . 'D' ), $days < 0 );
 
    }
 
@@ -822,9 +828,7 @@ class DateTime extends \DateTime
       : DateTime
    {
 
-      $this->add( new \DateInterval( 'P' . $weeks . 'W' ) );
-
-      return $this;
+      return $this->move( new \DateInterval( 'PT' . \abs( $weeks ) . 'W' ), $weeks < 0 );
 
    }
 
