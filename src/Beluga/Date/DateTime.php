@@ -7,7 +7,7 @@
  * @package        Beluga
  * @since          2016-08-21
  * @subpackage     Date
- * @version        0.1.1
+ * @version        0.1.2
  */
 
 
@@ -814,7 +814,7 @@ class DateTime extends \DateTime
       : DateTime
    {
 
-      return $this->move( new \DateInterval( 'PT' . \abs( $days ) . 'D' ), $days < 0 );
+      return $this->move( new \DateInterval( 'P' . \abs( $days ) . 'D' ), $days < 0 );
 
    }
 
@@ -828,7 +828,7 @@ class DateTime extends \DateTime
       : DateTime
    {
 
-      return $this->move( new \DateInterval( 'PT' . \abs( $weeks ) . 'W' ), $weeks < 0 );
+      return $this->move( new \DateInterval( 'P' . \abs( $weeks ) . 'W' ), $weeks < 0 );
 
    }
 
