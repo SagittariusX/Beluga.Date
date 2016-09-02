@@ -2,6 +2,8 @@
 
 Better Time and DateTime handling classes
 
+## Installation
+
 ```bash
 composer require sagittariusx/beluga.date
 ```
