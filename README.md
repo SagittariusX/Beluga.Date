@@ -3,7 +3,7 @@
 Better Time and DateTime handling classes
 
 ```bash
-composer require sagittariusx/beluga.web
+composer require sagittariusx/beluga.date
 ```
 
 or include it inside you're composer.json
@@ -11,7 +11,7 @@ or include it inside you're composer.json
 ```json
 {
    "require": {
-      "sagittariusx/beluga.web": "^0.1.2"
+      "sagittariusx/beluga.date": "^0.2.0"
    }
 }
 ```

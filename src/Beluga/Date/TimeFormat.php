@@ -5,7 +5,7 @@
  * @package        Beluga
  * @since          2016-08-21
  * @subpackage     Date
- * @version        0.1.0
+ * @version        0.2.0
  */
 
 

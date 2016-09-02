@@ -7,7 +7,7 @@
  * @package        Beluga
  * @since          2016-08-21
  * @subpackage     Date
- * @version        0.1.2
+ * @version        0.2.0
  */
 
 
@@ -19,7 +19,10 @@ namespace Beluga\Date;
 
 use \Beluga\Translation\{Locale,Translator};
 use \Beluga\Translation\Source\ArraySource;
-use \Beluga\{Type,TypeTool};
+use Beluga\
+{
+   ArgumentError, Type, TypeTool
+};
 
 
 /**
@@ -27,6 +30,23 @@ use \Beluga\{Type,TypeTool};
  *
  * It can handle date times beginning with 0000-00-00 00:00:00
  *
+ * @property-read int  $year
+ * @property-read int  $month
+ * @property-read int  $day
+ * @property-read int  $hour
+ * @property-read int  $minute
+ * @property-read int  $second
+ * @property-read int  $microSecond
+ * @property-read int  $dayOfWeek
+ * @property-read int  $dayOfYear
+ * @property-read int  $weekOfYear
+ * @property-read int  $daysInMonth
+ * @property-read int  $timestamp
+ * @property-read int  $weekOfMonth
+ * @property-read int  $age
+ * @property-read int  $quarter
+ * @property-read int  $daysOfYear
+ * @property-read bool $isLeapYear
  * @since         v0.1.0
  */
 class DateTime extends \DateTime
@@ -109,6 +129,23 @@ class DateTime extends \DateTime
     */
    private static $translator = null;
 
+   private static $getFormats = [
+      'year' => 'Y',
+      'yearIso' => 'o',
+      'month' => 'n',
+      'day' => 'j',
+      'hour' => 'G',
+      'minute' => 'i',
+      'second' => 's',
+      'micro' => 'u',
+      'microSecond' => 'u',
+      'dayOfWeek' => 'w',
+      'dayOfYear' => 'z',
+      'weekOfYear' => 'W',
+      'daysInMonth' => 't',
+      'timestamp' => 'U',
+   ];
+
    // </editor-fold>
 
 
@@ -120,7 +157,7 @@ class DateTime extends \DateTime
     * @param string        $time
     * @param \DateTimeZone $timezone
     */
-   public function __construct( string $time = 'now', \DateTimeZone $timezone = null )
+   public function __construct( string $time = 'now', $timezone = null )
    {
 
       parent::__construct( $time, $timezone );
@@ -488,6 +525,83 @@ class DateTime extends \DateTime
 
    }
 
+   /**
+    * Gets the week number of the current instance date inside the current month.
+    *
+    * @return int
+    */
+   public final function getWeekOfMonth() : int
+   {
+
+      return (int) \ceil( $this->getDay() / 7 );
+
+   }
+
+   /**
+    * Get the difference in years between current date time and defined.
+    *
+    * If no other date time is defined Now is used.
+    *
+    * @param \Beluga\Date\DateTime|null $dt
+    * @param bool                       $abs Get the absolute of the difference
+    * @return int
+    */
+   public final function getDifferenceYears( $dt = null, bool $abs = true ) : int
+   {
+
+      $dt = $dt ?: static::Now( $this->getTimezone() );
+
+      return (int) $this->diff( $dt, $abs )->format( '%r%y' );
+
+   }
+
+   /**
+    * Gets the age for current date. This is the difference between instance date and current date, in years.
+    *
+    * @return int
+    */
+   public final function getAge() : int
+   {
+
+      return $this->getDifferenceYears();
+
+   }
+
+   public function __get( $name )
+   {
+
+      if ( \array_key_exists( $name, static::$getFormats ) )
+      {
+
+         return (int) $this->format( static::$getFormats[ $name ] );
+
+      }
+
+      switch ( $name )
+      {
+
+         case 'weekOfMonth':
+            return $this->getWeekOfMonth();
+
+         case 'age':
+            return $this->getAge();
+
+         case 'quarter':
+            return $this->getQuarter();
+
+         case 'daysOfYear':
+            return $this->getDaysOfYear();
+
+         case 'isLeapYear':
+            return $this->getIsLeapYear();
+
+         default:
+            return false;
+
+      }
+
+   }
+
    // </editor-fold>
 
 
@@ -502,7 +616,7 @@ class DateTime extends \DateTime
     * @param  integer       $second The new second, or NULL if the current defined should be used.
     * @return \Beluga\Date\DateTime
     */
-   public function setTimeParts( int $hour = null, int $minute = null, int $second = null )
+   public function setTimeParts( $hour = null, int $minute = null, int $second = null )
       : DateTime
    {
 
@@ -553,6 +667,20 @@ class DateTime extends \DateTime
       $this->setTime( $hour, $minute, $second );
 
       return $this;
+
+   }
+
+   /**
+    * Set an new time.
+    *
+    * @param \Beluga\Date\Time $time
+    * @return \Beluga\Date\DateTime
+    */
+   public function changeTime( Time $time )
+      : DateTime
+   {
+
+      return $this->setTime( $time->getHour(), $time->getMinute(), $time->getSecond() );
 
    }
 
@@ -611,7 +739,7 @@ class DateTime extends \DateTime
          $year = static::CurrentYear();
       }
 
-      return $this->setDate( $year );
+      return $this->setDateParts( $year );
 
    }
 
@@ -630,7 +758,7 @@ class DateTime extends \DateTime
          $month = static::CurrentMonth();
       }
 
-      return $this->setDate( null, $month );
+      return $this->setDateParts( null, $month );
 
    }
 
@@ -649,7 +777,7 @@ class DateTime extends \DateTime
          $day = static::CurrentDay();
       }
 
-      return $this->setDate( null, null, $day );
+      return $this->setDateParts( null, null, $day );
 
    }
 
@@ -668,7 +796,7 @@ class DateTime extends \DateTime
          $hour = static::CurrentHour();
       }
 
-      return $this->setTime( $hour );
+      return $this->setTimeParts( $hour );
 
    }
 
@@ -687,7 +815,7 @@ class DateTime extends \DateTime
          $minute = static::CurrentMinute();
       }
 
-      return $this->setTime( null, $minute );
+      return $this->setTimeParts( null, $minute );
 
    }
 
@@ -703,10 +831,10 @@ class DateTime extends \DateTime
 
       if ( \is_null( $second ) )
       {
-         $second = static::CurrentMinute();
+         $second = static::CurrentSecond();
       }
 
-      return $this->setTime( null, null, $second );
+      return $this->setTimeParts( null, null, $second );
 
    }
 
@@ -777,12 +905,40 @@ class DateTime extends \DateTime
    }
 
    /**
+    * An alias of {@see \Beluga\Date\DateTime::addSeconds}.
+    *
+    * @param  integer $seconds The seconds to add (use a negative value to subtract/remove the seconds)
+    * @return \Beluga\Date\DateTime Returns the current changed instance.
+    */
+   public final function moveSeconds( int $seconds = 1 )
+      : DateTime
+   {
+
+      return $this->addSeconds( $seconds );
+
+   }
+
+   /**
     * Adds the defined number of minutes.
     *
     * @param  integer $minutes The minutes to add (use a negative value to subtract/remove the minutes)
     * @return \Beluga\Date\DateTime Returns the current changed instance.
     */
    public final function addMinutes( int $minutes = 1 )
+      : DateTime
+   {
+
+      return $this->move( new \DateInterval( 'PT' . \abs( $minutes ) . 'M' ), $minutes < 0 );
+
+   }
+
+   /**
+    * An alias of {@see \Beluga\Date\DateTime::addMinutes}.
+    *
+    * @param  integer $minutes The minutes to add (use a negative value to subtract/remove the minutes)
+    * @return \Beluga\Date\DateTime Returns the current changed instance.
+    */
+   public final function moveMinutes( int $minutes = 1 )
       : DateTime
    {
 
@@ -950,6 +1106,20 @@ class DateTime extends \DateTime
 
    }
 
+   public function __isset( $name )
+   {
+
+      if ( \array_key_exists( $name, static::$getFormats ) )
+      {
+
+         return true;
+
+      }
+
+      return \in_array( $name, [ 'weekOfMonth', 'age', 'quarter', 'daysOfYear', 'isLeapYear' ] );
+
+   }
+
    // </editor-fold>
 
 
@@ -972,10 +1142,7 @@ class DateTime extends \DateTime
          }
       }
 
-      $val = \intval( $value->format( 'U' ) );
-      $thi = \intval( $this->format( 'U' ) );
-
-      return ( ( $val > $thi ) ? -1 : ( ( $val < $thi ) ? 1 : 0 ) );
+      return ( ( $value > $this ) ? -1 : ( ( $value < $this ) ? 1 : 0 ) );
 
    }
 
@@ -1056,6 +1223,11 @@ class DateTime extends \DateTime
          return new DateTime( $datetime->format( 'y-m-d H:i:s' ), $datetime->getTimezone() );
       }
 
+      if ( is_array( $datetime ) || ( $datetime instanceof \stdClass ) )
+      {
+         return false;
+      }
+
       if ( TypeTool::IsInteger( $datetime ) )
       {
          // Unix timestamp convert to DateTime string
@@ -1134,6 +1306,76 @@ class DateTime extends \DateTime
    }
 
    /**
+    * Create a DateTime instance from PHP \DateTime instance.
+    *
+    * @param \DateTime $dt
+    * @return \Beluga\Date\DateTime
+    */
+   public static function FromDateTime( \DateTime $dt ) : DateTime
+   {
+
+      if ( $dt instanceof DateTime )
+      {
+         return clone $dt;
+      }
+
+      return new DateTime( $dt->format('Y-m-d H:i:s.u'), $dt->getTimezone() );
+
+   }
+
+   public static function FromTimestamp( int $timestamp, \DateTimeZone $timezone = null )
+   {
+      return static::Now( $timezone )->setTimestamp( $timestamp );
+   }
+
+   /**
+    * Create a DateTime instance from a specific format.
+    *
+    * @param string        $format
+    * @param string        $time
+    * @param \DateTimeZone $timezone
+    * @throws \Beluga\ArgumentError
+    * @return \Beluga\Date\DateTime
+    */
+   public static function FromFormat( string $format, $time, \DateTimeZone $timezone = null ) : DateTime
+   {
+      if ( $timezone !== null )
+      {
+         $dt = parent::createFromFormat( $format, $time, $timezone );
+      }
+      else
+      {
+         $dt = parent::createFromFormat( $format, $time );
+      }
+
+      if ( $dt instanceof \DateTime )
+      {
+         return static::FromDateTime( $dt );
+      }
+
+      throw new ArgumentError(
+         'format',
+         $format,
+         'Date',
+         \join( \PHP_EOL, parent::getLastErrors() )
+      );
+
+   }
+
+   /**
+    * Create a DateTime instance from an UTC timestamp.
+    *
+    * @param int $timestamp
+    * @return \Beluga\Date\DateTime
+    */
+   public static function FromTimestampUTC( int $timestamp ) : DateTime
+   {
+
+      return new DateTime( '@' . $timestamp );
+
+   }
+
+   /**
     * Returns the current year.
     *
     * @return integer
@@ -1177,7 +1419,7 @@ class DateTime extends \DateTime
    public static function CurrentHour() : int
    {
 
-      return \intval( \strftime( '%h' ) );
+      return \intval( \date( 'h' ) );
 
    }
 
@@ -1201,7 +1443,7 @@ class DateTime extends \DateTime
    public static function CurrentSecond() : int
    {
 
-      return \intval( \strftime( '%S' ) );
+      return \intval( \date( 's' ) );
 
    }
 
@@ -1221,14 +1463,16 @@ class DateTime extends \DateTime
    /**
     * Init's a \Beluga\Date\DateTime with current DateTime and returns it.
     *
-    * @param  boolean      $useDayStart Set 00:00:00 as time? (default=FALSE)
-    * @param  boolean      $useDayEnd   Set 23:59:59 as time? (default=FALSE)
+    * @param  \DateTimeZone $timezone
+    * @param  boolean       $useDayStart Set 00:00:00 as time? (default=FALSE)
+    * @param  boolean       $useDayEnd   Set 23:59:59 as time? (default=FALSE)
     * @return \Beluga\Date\DateTime
     */
-   public static function Now( bool $useDayStart = false, bool $useDayEnd = false ) : DateTime
+   public static function Now(
+      \DateTimeZone $timezone = null, bool $useDayStart = false, bool $useDayEnd = false ) : DateTime
    {
 
-      $dt = new DateTime();
+      $dt = new DateTime( 'now', $timezone );
 
       if ( $useDayStart )
       {
@@ -1285,6 +1529,44 @@ class DateTime extends \DateTime
       $dt->setTime( 0, 0, 2 );
 
       return \intval( $dt->format( 't' ) );
+
+   }
+
+   /**
+    * Create a DateTime instance for the greatest supported date.
+    *
+    * @return \Beluga\Date\DateTime
+    */
+   public static function MaxValue() : DateTime
+   {
+
+      if ( \PHP_INT_SIZE === 4 )
+      {
+         // 32 bit (+ Win 64 bit)
+         return static::FromTimestamp( \PHP_INT_MAX );
+      }
+
+      // 64 bit
+      return static::Create( 9999, 12, 31, 23, 59, 59 );
+
+   }
+
+   /**
+    * Create a DateTime instance for the lowest supported date.
+    *
+    * @return \Beluga\Date\DateTime
+    */
+   public static function MinValue() : DateTime
+   {
+
+      if ( \PHP_INT_SIZE === 4 )
+      {
+         // 32 bit (+ Win 64 bit)
+         return static::FromTimestamp( ~PHP_INT_MAX );
+      }
+
+      // 64 bit
+      return static::Create( 1, 1, 1, 0, 0, 0 );
 
    }
 
